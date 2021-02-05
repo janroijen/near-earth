@@ -17,6 +17,7 @@ iterator.
 You'll edit this file in Tasks 3a and 3c.
 """
 import operator
+from itertools import islice
 
 
 class UnsupportedCriterionError(NotImplementedError):
@@ -38,6 +39,7 @@ class AttributeFilter:
     Concrete subclasses can override the `get` classmethod to provide custom
     behavior to fetch a desired attribute from the given `CloseApproach`.
     """
+
     def __init__(self, op, value):
         """Construct a new `AttributeFilter` from an binary predicate and a reference value.
 
@@ -106,8 +108,45 @@ def create_filters(date=None, start_date=None, end_date=None,
     :param hazardous: Whether the NEO of a matching `CloseApproach` is potentially hazardous.
     :return: A collection of filters for use with `query`.
     """
-    # TODO: Decide how you will represent your filters.
-    return ()
+    def date_equal_filter(x):
+        return date == None or x.time.date() == date
+
+    def start_date_filter(x):
+        return start_date == None or x.time.date() >= start_date
+
+    def end_date_filter(x):
+        return end_date == None or x.time.date() <= end_date
+
+    def distance_min_filter(x):
+        return distance_min == None or x.distance >= distance_min
+
+    def distance_max_filter(x):
+        return distance_max == None or x.distance <= distance_max
+
+    def velocity_min_filter(x):
+        return velocity_min == None or x.velocity >= velocity_min
+
+    def velocity_max_filter(x):
+        return velocity_max == None or x.velocity <= velocity_max
+
+    def diameter_min_filter(x):
+        return diameter_min == None or x.neo.diameter >= diameter_min
+
+    def diameter_max_filter(x):
+        return diameter_max == None or x.neo.diameter <= diameter_max
+
+    def hazardous_filter(x):
+        return hazardous == None or x.neo.hazardous == hazardous
+
+    def filter(x):
+        return (date_equal_filter(x) and
+                start_date_filter(x) and end_date_filter(x) and
+                distance_min_filter(x) and distance_max_filter(x) and
+                velocity_min_filter(x) and velocity_max_filter(x) and
+                diameter_min_filter(x) and diameter_max_filter(x) and
+                hazardous_filter(x))
+
+    return filter
 
 
 def limit(iterator, n=None):
@@ -119,5 +158,5 @@ def limit(iterator, n=None):
     :param n: The maximum number of values to produce.
     :yield: The first (at most) `n` values from the iterator.
     """
-    # TODO: Produce at most `n` values from the given iterator.
-    return iterator
+    for i in islice(iterator, None if n == 0 else n):
+        yield i
